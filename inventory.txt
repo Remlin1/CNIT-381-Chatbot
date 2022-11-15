@@ -1,0 +1,17 @@
+#Loopbacks would not connect, had to use the routers' G1 interface.
+[routers] 
+router1 ansible_host=192.168.56.104
+router2 ansible_host=192.168.56.106
+
+
+[routers:vars]
+ansible_network_os=ios
+ansible_user=cisco
+ansible_ssh_pass=cisco123!
+ansible_become=yes
+ansible_become_method=enable
+
+[all:vars]
+ansible_port=22
+
+
