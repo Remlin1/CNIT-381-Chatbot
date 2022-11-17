@@ -1,0 +1,54 @@
+---
+- name: VERIFY DEVICE HEALTH BY ANALYZING DIFFERENT PROCESSES
+  hosts: routers
+  gather_facts: false
+  connection: network_cli
+
+
+  tasks:
+    - name: SHOW VERSION OF IOS SOFTWARE
+      ios_command:
+        commands:
+          - show version
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "devicehealth/{{ inventory_hostname }}_version.txt"
+
+    - name: SHOW CPU UTILIZATION
+      ios_command:
+        commands:
+          - show process cpu sorted
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "devicehealth/{{ inventory_hostname }}_cpu.txt"
+
+    - name: SHOW MEMORY UTILIZATION
+      ios_command:
+        commands:
+          - show process memory sorted
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "devicehealth/{{ inventory_hostname }}_memory.txt"
+
+    - name: SHOW FILE SYSTEM SPACE
+      ios_command:
+        commands:
+          - show file systems
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "devicehealth/{{ inventory_hostname }}_file.txt"
+
+
+    
