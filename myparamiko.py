@@ -34,18 +34,13 @@ def show(shell, command, n=10000, timeout = 1):
     output = output.decode()
     return output
 
-def backup():
-	with open("deivce.yml", "r") as handle:
-		routers = safe_load(handle)
-	for router_name, router_info in routers.items():
-		router_info["username"] = username
-		router_info["password"] = password
-		client = connect(router_info)
-        	shell = get_shell(client)
-        	file = show(shell, "show run")
-        	with open('backup.txt', 'w') as f:
-			f.write(file)
-        		f.close()
+def backup(router):
+	client = connect(**router)
+        shell = get_shell(client)
+        file = show(shell, "show run")
+        with open(router_name + 'backup.txt', 'w') as f:
+		f.write(file)
+        	f.close()
         
 
 def close(ssh_client):    
@@ -54,7 +49,7 @@ def close(ssh_client):
         ssh_client.close()
 
 if __name__ == '__main__':
-    router1 = {'server_ip': '192.168.122.10', 'server_port': '22', 'user':'cisco', 'passwd':'cisco'}
+    router1 = {'server_ip': '192.168.122.10', 'server_port': '22', 'user':'cisco', 'passwd':'cisco', 'router_name':'R1'}
     client = connect(**router1)
     shell = get_shell(client)
 
