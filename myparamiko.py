@@ -40,12 +40,12 @@ def backup():
 	for router_name, router_info in routers.items():
 		router_info["username"] = username
 		router_info["password"] = password
-	    client = connect(router_info)
-        shell = get_shell(client)
-        file = show(shell, "show run")
-        with open('backup.txt', 'w') as f:
-	    f.write(file)
-            f.close()
+		client = connect(router_info)
+        	shell = get_shell(client)
+        	file = show(shell, "show run")
+        	with open('backup.txt', 'w') as f:
+			f.write(file)
+        		f.close()
         
 
 def close(ssh_client):    
