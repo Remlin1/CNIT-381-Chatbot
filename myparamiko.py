@@ -1,6 +1,8 @@
 import paramiko
 import time
 import ast
+from yaml import safe_load
+from netmiko import ConnectHandler
 
 def get_list_from_file(filename):
     with open(filename) as f:
@@ -8,13 +10,12 @@ def get_list_from_file(filename):
         f.close()
         return data
 
-def connect(server_ip, server_port, user, passwd):
-    ssh_client = paramiko.SSHClient()
-    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    print(f'Connecting to {server_ip}')
-    ssh_client.connect(hostname=server_ip, port=server_port, username=user, password=passwd,
-                       look_for_keys=False, allow_agent=False)
-    return ssh_client
+def connect(router_info):
+    connection = ConnectHandler(**router_info)
+	prompt = connection.find_prompt()
+	if ">" in prompt:
+		connection.enable()
+	return connection
 
 def get_shell(ssh_client):
     shell = ssh_client.invoke_shell()
@@ -26,14 +27,26 @@ def send_command(shell, command):
     #time.sleep(timeout)  
 
 def show(shell, command, n=10000, timeout = 1):
-    print(f'Sending command: {command}')
     shell.send('terminal length 0\n')
     shell.send(command + '\n')
     time.sleep(timeout)
     output = shell.recv(n)
     output = output.decode()
-    print (output)
     return output
+
+def backup():
+	with open("deivce.yml", "r") as handle:
+		routers = safe_load(handle)
+	for router_name, router_info in routers.items():
+		router_info["username"] = username
+		router_info["password"] = password
+	    client = connect(router_info)
+        shell = get_shell(client)
+        file = show(shell, "show run")
+        with open('backup.txt', 'w') as f:
+	        f.write(file)
+            f.close()
+        
 
 def close(ssh_client):    
     if ssh_client.get_transport().is_active() == True:
