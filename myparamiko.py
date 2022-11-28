@@ -44,7 +44,7 @@ def backup():
         shell = get_shell(client)
         file = show(shell, "show run")
         with open('backup.txt', 'w') as f:
-	        f.write(file)
+	    f.write(file)
             f.close()
         
 
