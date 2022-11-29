@@ -1,0 +1,30 @@
+---
+- name: VERIFY DEVICE HEALTH BY ANALYZING DIFFERENT PROCESSES
+  hosts: routers
+  gather_facts: false
+  connection: network_cli
+
+
+  tasks:
+
+    - name: SHOW CPU UTILIZATION
+      ios_command:
+        commands:
+          - show process cpu sorted
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "{{ inventory_hostname }}_cpu.txt"
+
+    - name: SHOW MEMORY UTILIZATION
+      ios_command:
+        commands:
+          - show process memory sorted
+      register: config
+
+    - name: SAVE OUTPUT TO ./devicehealth/
+      copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "{{ inventory_hostname }}_memory.txt"
