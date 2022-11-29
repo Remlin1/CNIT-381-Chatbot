@@ -5,14 +5,15 @@ import routers
 import yaml
 from ruamel.yaml import YAML
 from urllib3.exceptions import InsecureRequestWarning
+from ansible_playbook_runner import Runner
 
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 def run_monitor():
     # Router Info 
-    device_address = routers.router1['host']
-    device_username = routers.router1['username']
-    device_password = routers.router1['password']
+    device_address = routers.router2['host']
+    device_username = routers.router2['username']
+    device_password = routers.router2['password']
 
     # RESTCONF Setup
     port = '443'
@@ -23,7 +24,9 @@ def run_monitor():
 
     url = url_base + "/data/ietf-interfaces:interfaces"
     global brach_g2_ip
+    global old_g2_ip
     branch_g2_ip = "172.16.0.2"
+    old_g2_ip = ""
 
 
     #Start a timer to run the request per the time set
@@ -55,6 +58,7 @@ def run_monitor():
                 if g2_ip_new != branch_g2_ip:
 
                     #Set New IP
+                    old_g2_ip = branch_g2_ip
                     branch_g2_ip = g2_ip_new
                     print("IP address for GigabitEthernet2 has been updated to " + g2_ip_new,
                     ", and the vpn configuration has been updated")
@@ -65,14 +69,17 @@ def run_monitor():
 
                     with open("ansiblevpnreset.yaml") as f:
                         list_file = yaml.load(f)
+                        f.close()
 
                     for i in list_file:
                         i["vars"]["address"] = g2_ip_new
 
                     with open("ansiblevpnreset.yaml","w") as f:
                         yaml.dump(list_file, f)
+                        f.close()
 
-
+                    Runner(['inventory'],'ansiblevpnreset.yaml').run()
+                    #CALL THE ANSIBLE SCRIPT HERE
 
 
         #Setting up the sleep time after executing the above code
