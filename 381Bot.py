@@ -3,13 +3,22 @@ from webexteamsbot import TeamsBot
 from webexteamsbot.models import Response
 ### Utilities Libraries
 import routers
-import useless_skills as useless
-import useful_skills as useful
+import monitor as monitor
+import threading
+import time
+import myparamiko as m
+import botSkills as skills
+from ansible_playbook_runner import Runner
+
+
+#Make the thread list
+global threads
+threads = list()
 
 # Router Info 
-device_address = routers.router['host']
-device_username = routers.router['username']
-device_password = routers.router['password']
+device_address = routers.router1['host']
+device_username = routers.router1['username']
+device_password = routers.router1['password']
 
 # RESTCONF Setup
 port = '443'
@@ -18,10 +27,10 @@ headers = {'Content-Type': 'application/yang-data+json',
            'Accept': 'application/yang-data+json'}
 
 # Bot Details
-bot_email = '381Bot@webex.bot'
-teams_token = 'MmUwYjBiZjctODlkNC00MzVhLTk5NWQtMGQxNzY2M2EwZjI2MzlkNGI1YTAtNWM3_P0A1_5d96674f-de50-43d7-ae6b-8071b71cb457'
-bot_url = "https://0c52-66-188-237-165.ngrok.io"
-bot_app_name = 'CNIT-381 Network Auto Chat Bot'
+bot_email = 'networkbot123@webex.bot'
+teams_token = 'YjE2NWUyMzctNjg2Zi00OTA4LWFiZmMtOWNmMzcxYTgwYzEzNTJiNmM3OWMtMDQ0_P0A1_da087be3-a5c4-42e0-91c2-0fc6d3da3fdb'
+bot_url = "https://8aa0-12-206-249-123.ngrok.io"
+bot_app_name = 'Network Bot'
 
 # Create a Bot Object
 #   Note: debug mode prints out more details about processing to terminal
@@ -50,70 +59,131 @@ def greeting(incoming_msg):
     response.markdown += "\n\nSee what I can do by asking for **/help**."
     return response
 
-def arp_list(incoming_msg):
-    """Return the arp table from device
-    """
-    response = Response()
-    arps = useful.get_arp(url_base, headers,device_username,device_password)
+def start_monitor(incoming_msg):
 
-    if len(arps) == 0:
-        response.markdown = "I don't have any entries in my ARP table."
-    else:
-        response.markdown = "Here is the ARP information I know. \n\n"
-        for arp in arps:
-            response.markdown += "* A device with IP {} and MAC {} are available on interface {}.\n".format(
-               arp['address'], arp["hardware"], arp["interface"]
-            )
+    response = Response()
+    response.markdown = "Monitor starting..."
+    #Start the thread for the monitor
+    th = threading.Thread(target=monitor.run_monitor)
+    threads.append(th)
+
+    th.start()
 
     return response
 
-def sys_info(incoming_msg):
-    """Return the system info
-    """
-    response = Response()
-    info = useful.get_sys_info(url_base, headers,device_username,device_password)
 
-    if len(info) == 0:
-        response.markdown = "I don't have any information of this device"
-    else:
-        response.markdown = "Here is the device system information I know. \n\n"
-        response.markdown += "Device type: {}.\nSerial-number: {}.\nCPU Type:{}\n\nSoftware Version:{}\n" .format(
-            info['device-inventory'][0]['hw-description'], info['device-inventory'][0]["serial-number"], 
-            info['device-inventory'][4]["hw-description"],info['device-system-data']['software-version'])
+def stop_monitor(incoming_msg):
+
+    response = Response()
+    response.markdown = "Stopping the monitor, please wait...\n" 
+    monitor.monitor_flag = False
+    for th in threads:
+        th.join()
+        del(th)
+    time.sleep(5)
+    return response
+
+def show_versions(incoming_msg):
+    response = Response()
+    response.markdown = "Here is the version information for each router\n"
+    response.markdown += "+++++++++++++++ R1 +++++++++++++++\n"
+    with open(('router1_version.txt')) as f:
+      cpu = f.read()
+      f.close()
+      response.markdown += cpu + " \n"
+    
+    response.markdown += "+++++++++++++++ R2 +++++++++++++++\n"
+    with open(('router2_version.txt')) as f:
+      mem = f.read()
+      f.close()
+    response.markdown += mem
+    return response
+
+def run_backup(incoming_msg):
+    response = Response()
+    response.markdown = "All Network Devices have been backed up"
+    m.start_backup()
+    return response
+
+def R1_backup(incoming_msg):
+    response = Response()
+    with open(('R1backup.txt')) as f:
+        response.markdown = f.read()
+        f.close()
+    return response
+
+def R2_backup(incoming_msg):
+    response = Response()
+    with open(('R2backup.txt')) as f:
+        response.markdown = f.read()
+        f.close()
+    return response
+
+def Router_utilization(incoming_msg):
+    response = Response()
+    Runner(['inventory'],'ansibleutilization.yaml').run()
+    response.markdown = "R1 CPU AND MEMORY UTILIZATION:\n"
+    with open(('router1_cpu.txt')) as f:
+        cpu = f.readline().strip('\n')
+        f.close()
+        response.markdown += "CPU -> " + cpu + "\n"
+    with open(('router1_memory.txt')) as f:
+        mem = f.readline().strip('\n')
+        f.close()
+    response.markdown += "Memory -> " + mem + "\n"
+
+    response.markdown += "R2 CPU AND MEMORY UTILIZATION:\n"
+
+    with open(('router2_cpu.txt')) as f:
+        cpu = f.readline().strip('\n')
+        f.close()
+        response.markdown += "CPU -> " + cpu +"\n"
+    with open(('router2_memory.txt')) as f:
+        mem = f.readline().strip('\n')
+        f.close()
+    response.markdown += "Memory -> " + mem + "\n"
 
     return response
 
-def get_int_ips(incoming_msg):
+def nat_status(incoming_msg):
     response = Response()
-    intf_list = useful.get_configured_interfaces(url_base, headers,device_username,device_password)
+    status1 = skills.get_status("R1")
+    status2 = skills.get_status("R2")
 
-    if len(intf_list) == 0:
-        response.markdown = "I don't have any information of this device"
-    else:
-        response.markdown = "Here is the list of interfaces with IPs I know. \n\n"
-    for intf in intf_list:
-        response.markdown +="*Name:{}\n" .format(intf["name"])
-        try:
-            response.markdown +="IP Address:{}\{}\n".format(intf["ietf-ip:ipv4"]["address"][0]["ip"],
-                                intf["ietf-ip:ipv4"]["address"][0]["netmask"])
-        except KeyError:
-            response.markdown +="IP Address: UNCONFIGURED\n"
+    init1 = str(status1['ip-nat-statistics']['initialized'])
+    hits1 = str(status1['ip-nat-statistics']["hits"])
+    misses1 = str(status1['ip-nat-statistics']["misses"])
+
+    response.markdown = "------------ R1 ------------\n"
+    response.markdown += "Initialization Status:" + init1 + "\n"
+    response.markdown +=  "Hits: " + hits1 + "\n"
+    response.markdown += "Misses: " + misses1 + "\n"
+
+    init2 = str(status2['ip-nat-statistics']['initialized'])
+    hits2 = str(status2['ip-nat-statistics']["hits"])
+    misses2 = str(status2['ip-nat-statistics']["misses"])
+    response.markdown += "------------ R2 ------------\n"
+    response.markdown += "Initialization Status:" + init2 + "\n"
+    response.markdown +=  "Hits: " + hits2 + "\n"
+    response.markdown += "Misses: " + misses2 + "\n"
+
     return response
+
 
 # Set the bot greeting.
 bot.set_greeting(greeting)
 
 # Add Bot's Commmands
-bot.add_command(
-    "arp list", "See what ARP entries I have in my table.", arp_list)
-bot.add_command(
-    "system info", "Checkout the device system info.", sys_info)
-bot.add_command(
-    "show interfaces", "List all interfaces and their IP addresses", get_int_ips)
-bot.add_command("attachmentActions", "*", useless.handle_cards)
-bot.add_command("showcard", "show an adaptive card", useless.show_card)
-bot.add_command("dosomething", "help for do something", useless.do_something)
-bot.add_command("time", "Look up the current time", useless.current_time)
+#bot.add_command(
+    #"arp list", "See what ARP entries I have in my table.", arp_list)
+bot.add_command("start monitor", "Start the monitor for automatic vpn configuration update",start_monitor)
+bot.add_command("stop monitor", "Stop the running monitor", stop_monitor)
+bot.add_command("Run Backups", "Run paramiko script to pull backup from all devices,",run_backup)
+bot.add_command("Show R1 backup", "Show the saved backup config for R1", R1_backup)
+bot.add_command("Show R2 backup", "Show the saved backup config for R2", R2_backup)
+bot.add_command("Show version", "Show the running version of all routers", show_versions)
+bot.add_command("show router utilization","Show the Memory and CPU stats of the routers", Router_utilization)
+bot.add_command("show nat status", "Show's the nat status for R1 and R2", nat_status)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 
