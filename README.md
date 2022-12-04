@@ -1,6 +1,6 @@
 # CNIT-381-Chatbot
 
-### Prerequisites:
+### How to Install and Run:
 
 For our testing purpose we have tested on a linux based virtual machine, however you can use whatever OS you see fit, but keep in mind the steps for initial setup may vary.
 
@@ -16,5 +16,7 @@ For our testing purpose we have tested on a linux based virtual machine, however
 
 ![alt_text](https://github.com/Remlin1/CNIT-381-Chatbot/blob/main/readme_IMG/BotRequirements.PNG "Requirements")
 
-5. Update the IP addresses in the routers.py file to the addresses of your routers
+5. Update the IP addresses in the routers.py file to the addresses of your 
+
+6. After downloading all files and adjusting the files as needed run with "python3 webexbot.py" and your bot will be functional and ready to go!
 
