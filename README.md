@@ -16,4 +16,5 @@ For our testing purpose we have tested on a linux based virtual machine, however
 
 ![alt_text](https://github.com/Remlin1/CNIT-381-Chatbot/blob/main/readme_IMG/BotRequirements.PNG "Requirements")
 
+5. Update the IP addresses in the routers.py file to the addresses of your routers
 
