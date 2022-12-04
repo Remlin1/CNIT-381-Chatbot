@@ -27,9 +27,9 @@ headers = {'Content-Type': 'application/yang-data+json',
            'Accept': 'application/yang-data+json'}
 
 # Bot Details
-bot_email = 'networkbot123@webex.bot'
-teams_token = 'YjE2NWUyMzctNjg2Zi00OTA4LWFiZmMtOWNmMzcxYTgwYzEzNTJiNmM3OWMtMDQ0_P0A1_da087be3-a5c4-42e0-91c2-0fc6d3da3fdb'
-bot_url = "https://8aa0-12-206-249-123.ngrok.io"
+bot_email = '*Bot Email*'
+teams_token = '*Teams Token*'
+bot_url = "*Bot URL*"
 bot_app_name = 'Network Bot'
 
 # Create a Bot Object
