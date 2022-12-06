@@ -20,3 +20,10 @@ For our testing purpose we have tested on a linux based virtual machine, however
 
 6. After downloading all files and adjusting the files as needed run with "python3 webexbot.py" and your bot will be functional and ready to go!
 
+### Paramiko Skill:
+
+### NETCONF/RESTCONF Skill:
+
+### Ansible Skill:
+
+### Monitoring Skill:
