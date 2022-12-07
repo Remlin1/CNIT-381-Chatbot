@@ -25,5 +25,6 @@ For our testing purpose we have tested on a linux based virtual machine, however
 ### NETCONF/RESTCONF Skill:
 
 ### Ansible Skill:
+For our ansible skill, we decided to try and view the health of the routers and ensure that they are operating at healthy levels. To do this, we use an ansible playbook to view the cpu and memory utilization. There is also another ansible playbook that is set up to show the current version and different license packages that is contained in the router to show the commands that the routers are capable of using. These playbooks then create files that the bot uses to form its response. The show version command will view the file showing the versioning for each device and the router utilization command will show the files shwoing the memroy and cpu utilization on each router.
 
 ### Monitoring Skill:
