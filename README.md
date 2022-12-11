@@ -21,6 +21,7 @@ For our testing purpose we have tested on a linux based virtual machine, however
 6. After downloading all files and adjusting the files as needed run with "python3 webexbot.py" and your bot will be functional and ready to go!
 
 ### Paramiko Skill:
+This Skill was initially going to be an automated backup of the router once the VPN tunnel was setup again, but after running into some thread errors, it became a manual backup of the router.
 
 ### NETCONF/RESTCONF Skill:
 This still utilises NETCONF to query both routers NETCONF interfaces and return information about NAT. It will then parse out the usefull information and format it in a way that is easily readable within Webex chat function.
